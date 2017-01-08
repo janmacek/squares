@@ -1,5 +1,13 @@
-
-// Define the Circle constructor
+/**
+ * Define the Circle constructor
+ * @param {Number} id
+ * @param {Number} color
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Number} radius
+ * @param {Number} circlesInRow
+ * @param {Function} render
+ */
 function Circle(id, color, x, y, radius, circlesInRow, render) {
 
       // Custom id of object which describes position in matrix of Circles
@@ -14,6 +22,10 @@ function Circle(id, color, x, y, radius, circlesInRow, render) {
 
       // Array of id of connected circles
       this.connected = [];
+
+      this.radius = radius;
+
+      this.color = color;
 
       // Create array of neighbour circles
       this.neighbours = [];
@@ -30,7 +42,7 @@ function Circle(id, color, x, y, radius, circlesInRow, render) {
 
       // Finally create circle shaped object with defined values
       this.lineStyle(1, 0x000000)
-      this.beginFill(0xffffff);
+      this.beginFill(this.color);
       this.drawCircle(0, 0, radius);
       this.endFill();
       this.x = x;
@@ -43,27 +55,64 @@ Circle.prototype = Object.create(PIXI.Graphics.prototype);
 // Set the "constructor" property to refer to Circle
 Circle.prototype.constructor = Circle;
 
+/**
+ * Check if this circle and selected circle are next to each other
+ * @param {Number} id
+ */
 Circle.prototype.isNeighbour = function Circle_isNeighbour(id) {
     return (this.neighbours.indexOf(id) !== -1);
 }
 
+/**
+ * Check if there is line between this circle and selected circle
+ * @param {Number} id
+ */
 Circle.prototype.conncectedTo = function Circle_conncectedTo(id) {
     return (this.connected.indexOf(id) !== -1);
 }
 
-Circle.prototype.unconnect = function Circle_unconnect(value) {
-    this.connected.splice(this.connected.indexOf(value), 1);
+/**
+ * Remove connection of this circle and selected circle
+ * @param {Number} id
+ */
+Circle.prototype.unconnect = function Circle_unconnect(id) {
+    this.connected.splice(this.connected.indexOf(id), 1);
 }
 
-Circle.prototype.getScale = function Circle_getScale(scale) {
+/**
+ * Return actual circle scale
+ * @param {Number} scale
+ */
+Circle.prototype.getScale = function Circle_getScale() {
     return (this.scale.x + this.scale.y) / 2;
 }
 
+/**
+ * Set actual circle scale
+ * @param {Number} scale
+ */
 Circle.prototype.setScale = function Circle_setScale(scale) {
     this.scale.x = scale;
     this.scale.y = scale;
 }
 
+/**
+ * Set actual circle color and reflect change
+ * @param {Number} color
+ */
+Circle.prototype.setColor = function Circle_setScale(color) {
+    this.clear();
+    this.color = color;
+    this.lineStyle(1, 0x000000)
+    this.beginFill(this.color);
+    this.drawCircle(0, 0, this.radius);
+    this.endFill();
+    this.redraw();
+}
+
+/**
+ * Call renderer to render actual scene
+ */
 Circle.prototype.redraw = function Circle_redraw() {
     if(this.render != null) {
         this.render.call();
@@ -72,6 +121,9 @@ Circle.prototype.redraw = function Circle_redraw() {
     }
 }
 
+/**
+ * Change scale of circle (by small steps) to max scale
+ */
 Circle.prototype.grow = function Circle_grow() {
     if(this.getScale() >= this.DEFAULT_MAX_SCALE) {
       PIXI.ticker.shared.remove(this.grow ,this);
@@ -85,6 +137,9 @@ Circle.prototype.grow = function Circle_grow() {
     this.redraw();
 }
 
+/**
+ * Change scale of circle (by small steps) to initial (min) scale
+ */
 Circle.prototype.shrink = function Circle_shrink() {
     if(this.tickStart <= 0) {
       PIXI.ticker.shared.remove(this.shrink ,this);
@@ -97,6 +152,10 @@ Circle.prototype.shrink = function Circle_shrink() {
     this.redraw();
 }
 
+/**
+ * Change scale of circle (by small steps)
+ * @param {Boolean} grow
+ */
 Circle.prototype.animateScale = function Circle_animateScale(grow = true) {
     if(grow) {
         PIXI.ticker.shared.remove(this.shrink ,this);

@@ -1,4 +1,11 @@
-// Define the Line constructor
+/**
+ * Define the Line constructor
+ * @param {Number} id
+ * @param {Number} color
+ * @param {Number} circlesInRow
+ * @param {Object} startPosition
+ * @param {Number} circleDistance
+ */
 function Line(id, color, circlesInRow, startPosition, circleDistance) {
 
     this.id = id;
@@ -9,43 +16,60 @@ function Line(id, color, circlesInRow, startPosition, circleDistance) {
 
     this.weight = 0;
 
-    this.circles = this.composeFromToIds(circlesInRow, id, startPosition, circleDistance);
+    // Object of from and to circle ids and positions
+    this.circles = this.composeFromToIds(circlesInRow, startPosition, circleDistance);
 
     // Array of id of adjacent squares
-    this.squares = this.composeSquares(circlesInRow, id);
+    this.squares = this.composeSquares(circlesInRow);
 
     // Call the PIXI.Graphics constructor
     PIXI.Graphics.call(this);
 }
 
-// Create a Line.prototype object that inherits from PIXI.Graphics.prototype
+/**
+ * Create a Line.prototype object that inherits from PIXI.Graphics.prototype
+ */
 Line.prototype = Object.create(PIXI.Graphics.prototype);
 
-// Set the "constructor" property to refer to Line
+/**
+ * Set the "constructor" property to refer to Line
+ */
 Line.prototype.constructor = Line;
 
+/**
+ * Redraw line into actual scene
+ */
 Line.prototype.show = function () {
-    this.lineStyle(1, this.color, 1);
+    this.lineStyle(3, this.color, 1);
     this.moveTo(this.circles.from.x, this.circles.from.y);
     this.lineTo(this.circles.to.x, this.circles.to.y);
     this.hidden = false;
 };
 
+/**
+ * Remove line from actual scene
+ */
 Line.prototype.hide = function () {
     this.clear();
     this.hidden = true;
 };
 
-Line.prototype.composeFromToIds = function (circlesInRow, id, startPosition, circleDistance) {
+/**
+ * Create object of from and to circle ids and positions
+ * @param {Number} circlesInRow
+ * @param {Object} startPosition
+ * @param {Number} circleDistance
+ */
+Line.prototype.composeFromToIds = function (circlesInRow, startPosition, circleDistance) {
     let from = -1;
     let to = -1;
     const linesInRow = 2 * circlesInRow - 1;
 
     // Convert id to first row id
-    const n = id % linesInRow;
+    const n = this.id % linesInRow;
 
     // Compute row number of this line
-    const row = Math.floor(id / linesInRow);
+    const row = Math.floor(this.id / linesInRow);
 
     // Compute id of from and to circles
     if(n < circlesInRow - 1) {
@@ -70,23 +94,27 @@ Line.prototype.composeFromToIds = function (circlesInRow, id, startPosition, cir
     };
 };
 
-Line.prototype.composeSquares = function (circlesInRow, id) {
+/**
+ * Create array of id of adjacent squares
+ * @param {Number} circlesInRow
+ */
+Line.prototype.composeSquares = function (circlesInRow) {
     let squaresInRow = circlesInRow - 1;
     let linesInRow = 2 * circlesInRow - 1;
     let squares = [];
 
-    const n = id % linesInRow;
+    const n = this.id % linesInRow;
 
     // Compute row number of this line
-    const row = Math.floor(id / linesInRow)
+    const row = Math.floor(this.id / linesInRow)
 
     if(n < circlesInRow - 1) {
 
         // Append square on above line
-        if(id > circlesInRow - 1) squares.push(n - squaresInRow + (row * squaresInRow));
+        if(this.id > circlesInRow - 1) squares.push(n - squaresInRow + (row * squaresInRow));
 
         // Append square on below line
-        if(id < linesInRow * (circlesInRow - 1)) squares.push(n + (row * squaresInRow));
+        if(this.id < linesInRow * (circlesInRow - 1)) squares.push(n + (row * squaresInRow));
     } else {
 
         // Append square on lines left side
@@ -99,18 +127,22 @@ Line.prototype.composeSquares = function (circlesInRow, id) {
     return squares;
 };
 
-/* Line id can be count as:
+/**
+ * Get id of line by from and to circle ids by followinf equation:
  * ((C - 1) * S / C + S) if circles are in horizontal position
  * ((C - 1) * B / C + S) if circles are in vertical position
  * Where S is smaller id of two connected circles, B is bigger id of two connected circles and C is count of circles in one line
+ * @param {Number} id1
+ * @param {Number} id2
+ * @param {Number} circlesInRow
  */
-Line.getLineId = function(id1, id2) {
+Line.getLineId = function(id1, id2, circlesInRow) {
     if(Math.abs(id1 - id2) == 1) {
         var s = (id1 < id2) ? id1 : id2;
-        return (CIRCLE_COUNT - 1) * Math.floor(s / CIRCLE_COUNT) + s;
+        return (circlesInRow - 1) * Math.floor(s / circlesInRow) + s;
     } else {
         var s = (id1 < id2) ? id1 : id2;
         var b = (id1 > id2) ? id1 : id2;
-        return (CIRCLE_COUNT - 1) * Math.floor(b / CIRCLE_COUNT) + s;
+        return (circlesInRow - 1) * Math.floor(b / circlesInRow) + s;
     }
 }

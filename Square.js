@@ -1,4 +1,11 @@
-// Define the Square constructor
+/**
+ * Define the Square constructor
+ * @param {Number} id
+ * @param {Array} colors
+ * @param {Object} startPosition
+ * @param {Number} circlesInRow
+ * @param {Number} circleDistance
+ */
 function Square(id, colors, startPosition, circlesInRow, circleDistance) {
 
     this.id = id;
@@ -29,17 +36,27 @@ function Square(id, colors, startPosition, circlesInRow, circleDistance) {
     this.draw();
 }
 
-// Create a Square.prototype object that inherits from PIXI.Graphics.prototype
+/**
+ * Create a Square.prototype object that inherits from PIXI.Graphics.prototype
+ */
 Square.prototype = Object.create(PIXI.Graphics.prototype);
 
-// Set the "constructor" property to refer to Square
+/**
+ * Set the "constructor" property to refer to Square
+ */
 Square.prototype.constructor = Line;
 
+/**
+ * Create Array of adjacent lines
+ */
 Square.prototype.composeLines = function() {
-    let n = this.id + (Math.floor(this.id / (this.squaresInRow)) * CIRCLE_COUNT);
+    let n = this.id + (Math.floor(this.id / (this.squaresInRow)) * (this.squaresInRow + 1));
     return [n, n + this.squaresInRow, n + this.squaresInRow + 1, n + (this.squaresInRow * 2) + 1];
 }
 
+/**
+ * Draw line into Graphics
+ */
 Square.prototype.draw = function () {
     this.beginFill(this.colors[this.player]);
     this.drawRect(0, 0, this.size, this.size);
@@ -51,8 +68,12 @@ Square.prototype.draw = function () {
     this.endFill();
 };
 
+/**
+ * Assign this square to player and set value of square
+ * @param {Number} player 
+ */
 Square.prototype.set = function (player) {
-    if(this.player === player) {
+    if(this.player == player) {
         this.value *= 2;
     } else {
         this.player = player;
